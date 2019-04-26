@@ -1,17 +1,43 @@
 %% Modal Adaptive Optics
 % This set of codes are used to measure the aberrations and create SLM 
-% correction phase mask. This measurement should be done for different 
-% imaging depths, and a correction mask should be created for each depth. 
-% Run "assemble_ao_phase.m" to assemble the correction mask for different
-% imaging depths into a single calibration file, which can then be used as 
-% part of the calibration in "ImagingControl.m" when performing volumetric 
-% imaging. 
+% correction phase mask. It should be run in conjunction with
+% "adaptive_optics_processing_modal.m". 
+% This AO measurement should be run for different imaging depths, and a 
+% correction mask should be created for each depth. 
+% After the measurement for each depth, run "assemble_ao_phase.m" to 
+% assemble the correction mask for different imaging depths into a single 
+% calibration file, which can then be used as part of the calibration in 
+% "ImagingControl.m" when performing volumetric imaging. 
+
+% This program assumes the SLM is from BNS (Meadowlark Optics) or Holoeye
+% It uses NI DAQ to trigger the data acquisition. 
+% One has to set up the SLM and NI DAQ before running this program.
+
+% Blow is the flow of this program
+% 1. Set a specific imaging depth, and run "AdaptiveOptics_modal.m", which 
+% steps through different Zernike modes into the SLM.
+% (1) For each Zernike mode, it steps through different phase amplitudes.
+% Once the mask is loaded to SLM, it sends a trigger to ScanImage so an
+% image is acquired. The mask with the next phase amplitude could then be
+% loaded to SLM.
+% (2) After all the phase amplitudes are stepped through, run 
+% "adaptive_optics_processing_modal.m" to analyze all the images acquired
+% just now by ScanImage, and choose the best one, corresponding to a
+% specific phase amplitude of the current Zernike mode. This information is
+% input into the command window of "AdaptiveOptics_modal.m". 
+% [Note: "adaptive_optics_processing_modal.m" and ScanImage could be run on
+% another computer.]
+% (3) Repeat (1) and (2) for the next Zernike mode.
+% (4) Save the final phase mask which combines different Zernike modes with
+% different phase amplitudes.
+% 2. Repeat step 1 for other different imaging depths. 
+% 3. After step 2 is finished, run "assemble_ao_phase.m" to 
+% assemble the correction mask for different imaging depths into a single 
+% calibration file, which can then be used as part of the calibration in 
+% "ImagingControl.m" when performing volumetric imaging.
 
 % Author: Weijian Yang, Shuting Han, 2017-2019
 
-% This program assumes the SLM is from BNS (Meadowlark Optics) or Holoeye
-% It uses NI DAQ to trigger the data acquisition
-% One has to set up the SLM and NI DAQ before running this program.
 
 %% set up and open SLM
 CFG2;
